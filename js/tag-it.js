@@ -276,7 +276,14 @@
                         // Autocomplete will create its own tag from a selection and close automatically.
                         if (!(that.options.autocomplete.autoFocus && that.tagInput.data('autocomplete-open'))) {
                             that.tagInput.autocomplete('close');
-                            that.createTag(that._cleanedInput());
+							
+							if(that.options.separateValueLabel && typeof that.tagInput.data('focusTag') !== 'undefined'){
+								that.createTag( that.tagInput.data('focusTag') );
+								that.tagInput.removeData('focusTag');
+							}
+							else{
+								that.createTag(that._cleanedInput());
+							}
                         }
                     }
                 }).blur(function(e){
@@ -288,7 +295,7 @@
                 });
 
             // Autocomplete.
-            if (this.options.availableTags || this.options.tagSource || this.options.autocomplete.source) {
+            if (this.options.availableTags || this.options.tagSource || this.options.autocomplete.source) {				
                 var autocompleteOptions = {
                     select: function(event, ui) {
 						if(that.options.separateValueLabel){
@@ -297,9 +304,19 @@
 						else{
 							that.createTag(ui.item.value);
 						}
-                        // Preventing the tag input to be updated with the chosen value.
-                        return false;
-                    }
+						// Preventing the tag input to be updated with the chosen value.
+						return false;
+					},
+					focus: function(event, ui){
+						if(!that.options.separateValueLabel) return true;
+						
+						if(/^key/.test(event.originalEvent.originalEvent.type)){
+							$(event.currentTarget).val(ui.item.label).data('focusTag', ui.item);
+						}
+						
+						// Preventing the tag input to be updated with the chosen value.
+						return false;
+					}
                 };
                 $.extend(autocompleteOptions, this.options.autocomplete);
 
